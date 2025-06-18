@@ -220,10 +220,10 @@ window.onload = () => {
       if (playerX === entranceExit.end[0] && playerY === entranceExit.end[1]) {
         const seconds = parseInt(timer.textContent) || 1;
         const pathLength = solution.length || 1;
-        const score = pathLength / seconds;
-        if (score > bestScore) {
-          bestScore = score | 0;
-          score.textContent = bestScore;
+        const currentScore = pathLength / seconds;
+        if (currentScore > bestScore) {
+          bestScore = currentScore | 0;
+          score.textContent = `${bestScore}`;
           writeBestScoreToStorage();
         }
         setupGame();
