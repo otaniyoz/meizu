@@ -386,19 +386,20 @@ window.onload = () => {
     drawGame();
   }
 
-  if (navigator.permissions) {
-    Promise.all([navigator.permissions.query({ name: 'accelerometer' }), navigator.permissions.query({ name: 'gyroscope' })]).then(results => {
-      if (results.every(result => result.state === 'granted')) setupOrientationSensor();
-      // else console.log('Not allowed to access sensors. Falling back to deviceorientation event.');
-      else alert('Not allowed to access sensors. Falling back to deviceorientation event.');
-    }).catch(err => {
-      // console.log('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
-      alert('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
-      setupDeviceOrientationFallback();
-    });
-  } else {
-    // console.log('Cannot ask for permission. Falling back to deviceorientation event.');
-    alert('Cannot ask for permission. Falling back to deviceorientation event.');
-    setupDeviceOrientationFallback();
-  }
+  setupOrientationSensor();
+  // if (navigator.permissions) {
+  //   Promise.all([navigator.permissions.query({ name: 'accelerometer' }), navigator.permissions.query({ name: 'magnetometer' })]).then(results => {
+  //     if (results.every(result => result.state === 'granted')) setupOrientationSensor();
+  //     // else console.log('Not allowed to access sensors. Falling back to deviceorientation event.');
+  //     else alert('Not allowed to access sensors. Falling back to deviceorientation event.');
+  //   }).catch(err => {
+  //     // console.log('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
+  //     alert('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
+  //     setupDeviceOrientationFallback();
+  //   });
+  // } else {
+  //   // console.log('Cannot ask for permission. Falling back to deviceorientation event.');
+  //   alert('Cannot ask for permission. Falling back to deviceorientation event.');
+  //   setupDeviceOrientationFallback();
+  // }
 };
