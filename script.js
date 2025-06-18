@@ -144,7 +144,7 @@ window.onload = () => {
 
     let attempts = 0;
     const maxAttempts = availableExits.length;
-    while (!solution && attempts < maxAttempts) {
+    while (!solution && solution.length > 4 && attempts < maxAttempts) {
       maze[startEnd.end[1]][startEnd.end[0]] = 1;
       startEnd.end = availableExits[attempts];
       maze[startEnd.end[1]][startEnd.end[0]] = 0;
