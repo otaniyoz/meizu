@@ -347,7 +347,7 @@ window.onload = () => {
 
   function setupOrientationSensor() {
     const options = { frequency: 60, referenceFrame: 'device' };
-    const sensor = new RelativeOrientationSensor(options) || new AbsoluteOrientationSensor(options);
+    const sensor = new AbsoluteOrientationSensor(options);
 
     sensor.addEventListener('reading', () => {
       const { pitch, roll } = sensor.euler;
