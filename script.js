@@ -355,9 +355,10 @@ window.onload = () => {
     });
 
     sensor.addEventListener('error', (event) => {
-      if (event.error.name === 'NotReadableError') console.error('Orientation sensor is not available. Falling back to deviceorientation event.');
-      else if (event.error.name === 'NotAllowedError') console.log('Permission to use orientation sensor was denied. Falling back to deviceorientation event.');
-
+      // if (event.error.name === 'NotReadableError') console.error('Orientation sensor is not available. Falling back to deviceorientation event.');
+      // else if (event.error.name === 'NotAllowedError') console.error('Permission to use orientation sensor was denied. Falling back to deviceorientation event.');
+      if (event.error.name === 'NotReadableError') alert('Orientation sensor is not available. Falling back to deviceorientation event.');
+      else if (event.error.name === 'NotAllowedError') alert('Permission to use orientation sensor was denied. Falling back to deviceorientation event.');
       setupDeviceOrientationFallback();
     });
 
@@ -388,13 +389,16 @@ window.onload = () => {
   if (navigator.permissions) {
     Promise.all([navigator.permissions.query({ name: 'accelerometer' }), navigator.permissions.query({ name: 'gyroscope' })]).then(results => {
       if (results.every(result => result.state === 'granted')) setupOrientationSensor();
-      else console.log('Not allowed to access sensors. Falling back to deviceorientation event.');
+      // else console.log('Not allowed to access sensors. Falling back to deviceorientation event.');
+      else alert('Not allowed to access sensors. Falling back to deviceorientation event.');
     }).catch(err => {
-      console.log('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
+      // console.log('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
+      alert('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
       setupDeviceOrientationFallback();
     });
   } else {
-    console.log('Cannot ask for permission. Falling back to deviceorientation event.');
+    // console.log('Cannot ask for permission. Falling back to deviceorientation event.');
+    alert('Cannot ask for permission. Falling back to deviceorientation event.');
     setupDeviceOrientationFallback();
   }
 };
