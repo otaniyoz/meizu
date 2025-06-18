@@ -345,15 +345,43 @@ window.onload = () => {
     drawGame();
   });
 
-  window.addEventListener('deviceorientation', (event) => {
-    const tiltX = event.gamma; // left-right
-    const tiltY = event.beta; // front-back
+  function setupOrientationSensor() {
+    const options = { frequency: 60, referenceFrame: 'device' };
+    const sensor = new RelativeOrientationSensor(options) || new AbsoluteOrientationSensor(options);
+    sensor.addEventListener('reading', () => {
+      const { pitch, roll } = sensor.euler;
 
-    if (tiltX < -10) movePlayer(-1, 0);
-    else if (tiltX > 10) movePlayer(1, 0);
-    else if (tiltY < -10) movePlayer(0, -1);
-    else if (tiltY > 10) movePlayer(0, 1);
-    
-    drawGame();
-  });
+      let playerMoveX = 0;
+      let playerMoveY = 0;
+
+      if (roll < -10) playerMoveX = -1;
+      else if (roll > 10) playerMoveX = 1;
+
+      if (pitch < -10) playerMoveY = 1;
+      else if (pitch > 10) playerMoveY = -1;
+
+      movePlayer(playerMoveX, playerMoveY);
+      drawGame();
+    });
+
+    sensor.addEventListener('error', (event) => {
+      if (event.error.name === 'NotReadableError') console.error('Orientation sensor is not available.');
+      else if (event.error.name === 'NotAllowedError') console.log('Permission to use orientation sensor was denied.');
+    });
+
+    sensor.start();
+  }
+
+  if (navigator.permissions) {
+    Promise.all([navigator.permissions.query({ name: 'accelerometer' }), navigator.permissions.query({ name: 'gyroscope' })]).then(results => {
+      if (results.every(result => result.state === 'granted')) setupOrientationSensor();
+      else console.log('Not allowed to access sensors.');
+    }).catch(err => {
+      console.log('Cannot ask for permission to use sensors.');
+      setupOrientationSensor();
+    });
+  } else {
+    console.log('Cannot ask for permission.');
+    setupOrientationSensor();
+  }
 };
