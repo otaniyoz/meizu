@@ -345,26 +345,6 @@ window.onload = () => {
     drawGame();
   });
 
-  function setupOrientationSensor() {
-    const options = { frequency: 60, referenceFrame: 'device' };
-    const sensor = new AbsoluteOrientationSensor(options);
-
-    sensor.addEventListener('reading', () => {
-      const { pitch, roll } = sensor.euler;
-      mapOrientationToPlayerMove(roll, pitch); 
-    });
-
-    sensor.addEventListener('error', (event) => {
-      // if (event.error.name === 'NotReadableError') console.error('Orientation sensor is not available. Falling back to deviceorientation event.');
-      // else if (event.error.name === 'NotAllowedError') console.error('Permission to use orientation sensor was denied. Falling back to deviceorientation event.');
-      if (event.error.name === 'NotReadableError') alert('Orientation sensor is not available. Falling back to deviceorientation event.');
-      else if (event.error.name === 'NotAllowedError') alert('Permission to use orientation sensor was denied. Falling back to deviceorientation event.');
-      setupDeviceOrientationFallback();
-    });
-
-    sensor.start();
-  }
-
   function setupDeviceOrientationFallback() {
     window.addEventListener('deviceorientation', (event) => {
       const { beta, gamma } = event;
@@ -386,19 +366,16 @@ window.onload = () => {
     drawGame();
   }
 
-  if (navigator.permissions) {
-    Promise.all([navigator.permissions.query({ name: 'accelerometer' }), navigator.permissions.query({ name: 'magnetometer' })]).then(results => {
-      if (results.every(result => result.state === 'granted')) setupOrientationSensor();
-      // else console.log('Not allowed to access sensors. Falling back to deviceorientation event.');
-      else alert('Not allowed to access sensors. Falling back to deviceorientation event.');
-    }).catch(err => {
-      // console.log('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
-      alert('Cannot ask for permission to use sensors. Falling back to deviceorientation event.');
+  window.addEventListener('pointerdown', (event) => {
+    if (typeof(DeviceOrientationEvent) !== 'undefined' && typeof(DeviceOrientationEvent.requestPermission) === 'function' ) {
+      DeviceOrientationEvent.requestPermission().then(permissionState => {
+        if (permissionState === 'granted') setupDeviceOrientationFallback();
+        else alert('Device motion permission denied.');
+      }).catch(error => {
+        alert('Error requesting device motion permission:', error);
+      });
+    } else {
       setupDeviceOrientationFallback();
-    });
-  } else {
-    // console.log('Cannot ask for permission. Falling back to deviceorientation event.');
-    alert('Cannot ask for permission. Falling back to deviceorientation event.');
-    setupDeviceOrientationFallback();
-  }
+    }
+  });
 };
