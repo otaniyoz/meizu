@@ -35,6 +35,7 @@ window.onload = () => {
   setupGame();
   drawGame();
   updateTimer();
+  setupDeviceOrientation();
 
   function playMusic(e) {
     const tau = 2 * Math.PI;
@@ -366,7 +367,7 @@ window.onload = () => {
     drawGame();
   }
 
-  window.addEventListener('pointerdown', (event) => {
+  function setupDeviceOrientation() {
     if (typeof(DeviceOrientationEvent) !== 'undefined' && typeof(DeviceOrientationEvent.requestPermission) === 'function' ) {
       DeviceOrientationEvent.requestPermission().then(permissionState => {
         if (permissionState === 'granted') setupDeviceOrientationFallback();
@@ -377,5 +378,5 @@ window.onload = () => {
     } else {
       setupDeviceOrientationFallback();
     }
-  });
+  }
 };
