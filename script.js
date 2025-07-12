@@ -10,13 +10,16 @@ window.onload = () => {
   
   let playerX = 1;
   let playerY = 1;
+  let touchStartX = 0;
+  let touchStartY = 0;
   const showSolution = false;
 
   let resizeTimer;
   let elapsedTime = 0;
   let startTime = null;
   const targetFrameRate = 60;
-  
+  const updateThreshold = 50;
+
   const storageName = 'meizuBestScore';
   const timer = document.getElementById('timer');
   const score = document.getElementById('score');
@@ -35,7 +38,6 @@ window.onload = () => {
   setupGame();
   drawGame();
   updateTimer();
-  setupDeviceOrientation();
 
   function playMusic(e) {
     const tau = 2 * Math.PI;
@@ -282,15 +284,15 @@ window.onload = () => {
   }
 
   function findSquareSize(W, H, A_min, A_max) {
-  for (let A = A_min; A <= A_max; A++) {
-    let rows = H / A | 0;
-    let cols = W / A | 0;
-    if (rows % 2 !== 0 && cols % 2 !== 0) {
-      return A;
+    for (let A = A_min; A <= A_max; A++) {
+      let rows = H / A | 0;
+      let cols = W / A | 0;
+      if (rows % 2 !== 0 && cols % 2 !== 0) {
+        return A;
+      }
     }
+    return null;
   }
-  return null;
-}
 
   function updateValues() {
     const percent = 2;
@@ -323,10 +325,10 @@ window.onload = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       entranceExit = null;
-      updateValues(); 
-      setupGame(); 
+      updateValues();
+      setupGame();
       drawGame();
-    }, 150);
+    }, updateThreshold);
   });
 
   document.addEventListener('fullscreenchange', () => {
@@ -336,7 +338,30 @@ window.onload = () => {
     drawGame();
   });
 
-  document.addEventListener('keydown', (event) => {
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function' ) {
+      DeviceOrientationEvent.requestPermission().then(permissionState => {
+        if (permissionState === 'granted') {
+          window.addEventListener('deviceorientation', handleDeviceOrientation);
+        }
+        else {
+          console.log('Device motion permission denied.');
+        }
+      }).catch(error => {
+        console.error('Error requesting device motion permission:', error);
+      });
+    } 
+    else {
+      window.addEventListener('touchstart', handleTouchStart);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
+    }
+  }
+  else {
+    document.addEventListener('keydown', handleKeyStroke);
+  }
+
+  function handleKeyStroke(event) {
     if (['ArrowUp', 'w'].includes(event.key)) movePlayer(0, -1);
     else if (['ArrowDown', 's'].includes(event.key)) movePlayer(0, 1);
     else if (['ArrowLeft', 'a'].includes(event.key)) movePlayer(-1, 0);
@@ -344,18 +369,12 @@ window.onload = () => {
     
     if (audioContext.state === 'suspended') audioContext.resume();
     drawGame();
-  });
-
-  function setupDeviceOrientationFallback() {
-    window.addEventListener('deviceorientation', (event) => {
-      const { beta, gamma } = event;
-      mapOrientationToPlayerMove(gamma, beta); 
-    });
   }
 
-  function mapOrientationToPlayerMove(tiltX, tiltY) {
+  function handleDeviceOrientation(event) {
     let playerMoveX = 0;
     let playerMoveY = 0;
+    const { beta, gamma } = event;
 
     if (tiltX < -10) playerMoveX = -1;
     else if (tiltX > 10) playerMoveX = 1;
@@ -363,20 +382,35 @@ window.onload = () => {
     if (tiltY < -10) playerMoveY = 1;
     else if (tiltY > 10) playerMoveY = -1;
 
+    if (audioContext.state === 'suspended') audioContext.resume();
     movePlayer(playerMoveX, playerMoveY);
     drawGame();
   }
 
-  function setupDeviceOrientation() {
-    if (typeof(DeviceOrientationEvent) !== 'undefined' && typeof(DeviceOrientationEvent.requestPermission) === 'function' ) {
-      DeviceOrientationEvent.requestPermission().then(permissionState => {
-        if (permissionState === 'granted') setupDeviceOrientationFallback();
-        else alert('Device motion permission denied.');
-      }).catch(error => {
-        alert('Error requesting device motion permission:', error);
-      });
-    } else {
-      setupDeviceOrientationFallback();
-    }
+  function handleTouchStart(event) {
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+  }
+
+  function handleTouchMove(event) {
+    const touchX = event.touches[0].clientX;
+    const touchY = event.touches[0].clientY;
+
+    const touchDeltaX = touchX - touchStartX;
+    const touchDeltaY = touchY - touchStartY;
+
+    playerMoveX = Math.sign(touchDeltaX);
+    playerMoveY = Math.sign(touchDeltaY);
+
+    movePlayer(playerMoveX, playerMoveY);
+    drawGame();
+  }
+
+  function handleTouchEnd(event) {
+    playerMoveX = 0;
+    playerMoveY = 0;
+
+    movePlayer(playerMoveX, playerMoveY);
+    drawGame();
   }
 };
