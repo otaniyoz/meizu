@@ -10,6 +10,8 @@ window.onload = () => {
   
   let playerX = 1;
   let playerY = 1;
+  let playerMoveX = 0;
+  let playerMoveY = 0;
   let touchStartX = 0;
   let touchStartY = 0;
   const showSolution = false;
@@ -372,8 +374,6 @@ window.onload = () => {
   }
 
   function handleDeviceOrientation(event) {
-    let playerMoveX = 0;
-    let playerMoveY = 0;
     const { beta, gamma } = event;
 
     if (tiltX < -10) playerMoveX = -1;
